@@ -1,0 +1,328 @@
+--[[ 
+    Nub 0.1 - Ultimate Edition
+    SISTEMA: 
+    1. ESP Híbrido (Chams < 400 studs / Box > 400 studs)
+    2. UI Cyberpunk (Janela de Foco com Barra de HP Visual e KM/H)
+    3. Aimbot Wall-Lock (Trava através de paredes, Smoothness 1, Estável)
+    4. FOV Ring Inteligente (Branco: Vazio | Vermelho: Alvo | Roxo: Travado + Pulsação)
+]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- ==========================================
+-- CONFIGURAÇÕES GERAIS
+-- ==========================================
+local Controls = {
+    ESP_Enabled = true,
+    TargetInfo_Enabled = true,
+    TeamCheck = true,
+    Aimbot_Enabled = true,
+    ShowFOV = true,
+}
+
+local Settings = {
+    -- ESP Settings
+    HybridDistance = 400,
+    VisibleColor = Color3.fromRGB(150, 0, 255), -- Roxo
+    HiddenColor = Color3.fromRGB(255, 0, 0),    -- Vermelho
+    AccentColor = Color3.fromRGB(150, 0, 255), -- Roxo Neon
+    BgColor = Color3.fromRGB(15, 15, 15),
+    
+    -- Aimbot Settings
+    AimbotFOV = 100,         
+    AimbotSmoothness = 1,    -- Gruda instantâneo (conforme pedido)
+    
+    -- FOV Colors
+    FOV_Empty = Color3.fromRGB(255, 255, 255), -- Branco
+    FOV_Target = Color3.fromRGB(255, 0, 0),    -- Vermelho
+    FOV_Locked = Color3.fromRGB(150, 0, 255), -- Roxo
+}
+
+local Chams_Cache = {}
+local Box_Cache = {}
+local CurrentLockTarget = nil 
+local pulseStep = 0
+
+-- ==========================================
+-- DESENHO DO FOV RING (DINÂMICO)
+-- ==========================================
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Visible = false
+FOVCircle.Thickness = 1
+FOVCircle.NumSides = 64 
+FOVCircle.Radius = Settings.AimbotFOV
+FOVCircle.Filled = false
+FOVCircle.Transparency = 0.6
+
+-- ==========================================
+-- SISTEMA DE UI (MENU & WINDOW)
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+local success, err = pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
+if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+ScreenGui.Name = "Nub01_Ultimate"
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 160, 0, 250)
+MainFrame.Active = true
+MainFrame.Draggable = true 
+
+local Title = Instance.new("TextLabel")
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "Nub 0.1"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 18
+
+local function CreateButton(name, text, pos, toggleVar)
+    local btn = Instance.new("TextButton")
+    btn.Parent = MainFrame
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    btn.Position = pos
+    btn.Size = UDim2.new(0.8, 0, 0, 30)
+    btn.Font = Enum.Font.SourceSans
+    btn.Text = text .. ": " .. (Controls[toggleVar] and "ON" or "OFF")
+    btn.TextColor3 = Controls[toggleVar] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    btn.TextSize = 16
+    btn.MouseButton1Click:Connect(function()
+        Controls[toggleVar] = not Controls[toggleVar]
+        btn.Text = text .. ": " .. (Controls[toggleVar] and "ON" or "OFF")
+        btn.TextColor3 = Controls[toggleVar] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    end)
+    return btn
+end
+
+CreateButton("T1", "ESP Hybrid", UDim2.new(0.1, 0, 0.25, 0), "ESP_Enabled")
+CreateButton("T2", "Target Info", UDim2.new(0.1, 0, 0.40, 0), "TargetInfo_Enabled")
+CreateButton("T3", "Team Check", UDim2.new(0.1, 0, 0.55, 0), "TeamCheck")
+CreateButton("T4", "Aimbot Wall", UDim2.new(0.1, 0, 0.70, 0), "Aimbot_Enabled")
+CreateButton("T5", "Show FOV", UDim2.new(0.1, 0, 0.83, 0), "ShowFOV")
+
+local RejoinBtn = Instance.new("TextButton")
+RejoinBtn.Parent = MainFrame
+RejoinBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
+RejoinBtn.Position = UDim2.new(0.1, 0, 0.92, 0)
+RejoinBtn.Size = UDim2.new(0.8, 0, 0, 25)
+RejoinBtn.Text = "REJOIN SERVER"
+RejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RejoinBtn.Font = Enum.Font.SourceSansBold
+RejoinBtn.MouseButton1Click:Connect(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
+
+local InfoWindow = Instance.new("Frame")
+InfoWindow.Parent = ScreenGui
+InfoWindow.BackgroundColor3 = Settings.BgColor
+InfoWindow.BackgroundTransparency = 0.4
+InfoWindow.Size = UDim2.new(0, 200, 0, 130)
+InfoWindow.Visible = false
+Instance.new("UICorner", InfoWindow).CornerRadius = UDim.new(0, 10)
+local UIStroke = Instance.new("UIStroke", InfoWindow)
+UIStroke.Color = Settings.AccentColor
+UIStroke.Thickness = 2
+
+local function CreateRow(icon, label, pos)
+    local row = Instance.new("Frame")
+    row.Parent = InfoWindow
+    row.BackgroundTransparency = 1
+    row.Size = UDim2.new(1, -20, 0, 25)
+    row.Position = pos
+    local iconL = Instance.new("TextLabel", row)
+    iconL.BackgroundTransparency = 1; iconL.Size = UDim2.new(0, 20, 1, 0); iconL.Text = icon; iconL.TextColor3 = Color3.fromRGB(255, 255, 255); iconL.TextSize = 18
+    local labelL = Instance.new("TextLabel", row)
+    labelL.BackgroundTransparency = 1; labelL.Position = UDim2.new(0, 25, 0, 0); labelL.Size = UDim2.new(0, 60, 1, 0); labelL.Text = label; labelL.TextColor3 = Color3.fromRGB(200, 200, 200); labelL.TextXAlignment = Enum.TextXAlignment.Left; labelL.TextSize = 14
+    local valBg = Instance.new("Frame", row)
+    valBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30); valBg.Position = UDim2.new(0, 90, 0, 2); valBg.Size = UDim2.new(0, 100, 0, 20)
+    Instance.new("UICorner", valBg).CornerRadius = UDim.new(0, 5)
+    local valL = Instance.new("TextLabel", valBg)
+    valL.BackgroundTransparency = 1; valL.Size = UDim2.new(1, -10, 1, 0); valL.Position = UDim2.new(0, 5, 0, 0); valL.TextColor3 = Color3.fromRGB(255, 255, 255); valL.TextXAlignment = Enum.TextXAlignment.Left; valL.TextSize = 14
+    return valL, valBg
+end
+
+local nameVal = CreateRow("👤", "Name:", UDim2.new(0, 10, 0, 10))
+local hpVal, hpBg = CreateRow("❤️", "HP:", UDim2.new(0, 10, 0, 40))
+local distVal = CreateRow("📍", "Dist:", UDim2.new(0, 10, 0, 70))
+local speedVal = CreateRow("⏲️", "Speed:", UDim2.new(0, 10, 0, 100))
+local HPBar = Instance.new("Frame", hpBg)
+HPBar.BackgroundColor3 = Settings.AccentColor; HPBar.Size = UDim2.new(1, 0, 1, 0); HPBar.ZIndex = 0
+Instance.new("UICorner", HPBar).CornerRadius = UDim.new(0, 5)
+hpVal.ZIndex = 1
+
+-- ==========================================
+-- LÓGICA DE COMBATE (AIMBOT ESTÁVEL & WALL-LOCK)
+-- ==========================================
+
+local function GetBestTarget()
+    local Closest = nil
+    local MaxDist = Settings.AimbotFOV
+
+    if CurrentLockTarget and CurrentLockTarget.Character and CurrentLockTarget.Character:FindFirstChild("Head") then
+        local root = CurrentLockTarget.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
+            if onScreen then
+                local mousePos = UserInputService:GetMouseLocation()
+                local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                if dist < MaxDist then return CurrentLockTarget end
+            end
+        end
+    end
+
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player == LocalPlayer then continue end
+        if Controls.TeamCheck and Player.Team == LocalPlayer.Team then continue end
+        local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        local Hum = Player.Character and Player.Character:FindFirstChild("Humanoid")
+        if Root and Hum and Hum.Health > 0 then
+            local Pos, OnScreen = Camera:WorldToViewportPoint(Root.Position)
+            if OnScreen then
+                local MousePos = UserInputService:GetMouseLocation()
+                local Dist = (Vector2.new(Pos.X, Pos.Y) - MousePos).Magnitude
+                if Dist < MaxDist then
+                    MaxDist = Dist
+                    Closest = Player
+                end
+            end
+        end
+    end
+    return Closest
+end
+
+-- ==========================================
+-- LOOP PRINCIPAL
+-- ==========================================
+
+RunService.RenderStepped:Connect(function()
+    -- 1. Lógica do FOV Inteligente
+    local TargetInFOV = GetBestTarget()
+    FOVCircle.Visible = Controls.ShowFOV
+    FOVCircle.Position = UserInputService:GetMouseLocation()
+    
+    if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) and Controls.Aimbot_Enabled and TargetInFOV then
+        FOVCircle.Color = Settings.FOV_Locked
+        pulseStep = pulseStep + 0.1
+        FOVCircle.Radius = Settings.AimbotFOV + math.sin(pulseStep) * 5
+    elseif TargetInFOV then
+        FOVCircle.Color = Settings.FOV_Target
+        FOVCircle.Radius = Settings.AimbotFOV
+    else
+        FOVCircle.Color = Settings.FOV_Empty
+        FOVCircle.Radius = Settings.AimbotFOV
+    end
+
+    -- 2. Aimbot Execution (Wall-Lock + Smoothness 1)
+    if Controls.Aimbot_Enabled and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+        local Target = TargetInFOV
+        if Target and Target.Character and Target.Character:FindFirstChild("Head") then
+            CurrentLockTarget = Target
+            local HeadPos = Target.Character.Head.Position
+            local CurrentCF = Camera.CFrame
+            local TargetCF = CFrame.new(CurrentCF.Position, HeadPos)
+            Camera.CFrame = CurrentCF:Lerp(TargetCF, Settings.AimbotSmoothness)
+        else
+            CurrentLockTarget = nil
+        end
+    else
+        CurrentLockTarget = nil
+    end
+
+    -- 3. ESP Híbrido e Target Window
+    local ClosestForUI = nil
+    local ShortestUI = math.huge
+
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player == LocalPlayer then continue end
+        local isEnemy = not (Controls.TeamCheck and Player.Team == LocalPlayer.Team)
+        if not isEnemy then 
+            if Chams_Cache[Player] then Chams_Cache[Player].Parent = nil end
+            if Box_Cache[Player] then Box_Cache[Player].Visible = false end
+            continue 
+        end
+
+        local Character = Player.Character
+        local Root = Character and Character:FindFirstChild("HumanoidRootPart")
+        local Hum = Character and Character:FindFirstChild("Humanoid")
+        local Head = Character and Character:FindFirstChild("Head")
+
+        if not Root or not Hum or not Head or Hum.Health <= 0 then
+            if Chams_Cache[Player] then Chams_Cache[Player].Parent = nil end
+            if Box_Cache[Player] then Box_Cache[Player].Visible = false end
+            continue
+        end
+
+        if Controls.ESP_Enabled then
+            local distance = (Camera.CFrame.Position - Root.Position).Magnitude
+            local visible = (function()
+                local rp = RaycastParams.new()
+                rp.FilterDescendantsInstances = {LocalPlayer.Character, Character}
+                rp.FilterType = Enum.RaycastFilterType.Blacklist
+                return workspace:Raycast(Camera.CFrame.Position, Root.Position - Camera.CFrame.Position, rp) == nil
+            end)()
+            local color = visible and Settings.VisibleColor or Settings.HiddenColor
+
+            if distance < Settings.HybridDistance then
+                if Box_Cache[Player] then Box_Cache[Player].Visible = false end
+                local hl = Chams_Cache[Player] or Instance.new("Highlight")
+                hl.FillColor = color; hl.FillTransparency = 0.5; hl.OutlineColor = Color3.fromRGB(255,255,255); hl.Adornee = Character; hl.Parent = Character
+                Chams_Cache[Player] = hl
+            else
+                if Chams_Cache[Player] then Chams_Cache[Player].Parent = nil end
+                if not Box_Cache[Player] then 
+                    local b = Drawing.new("Square")
+                    b.Visible = false; b.Thickness = 1; b.Filled = false
+                    Box_Cache[Player] = b
+                end
+                local box = Box_Cache[Player]
+                local pos, onScreen = Camera:WorldToViewportPoint(Root.Position)
+                if onScreen then
+                    local size = (1000 / distance) * 3
+                    box.Visible = true; box.Size = Vector2.new(size, size * 1.5); box.Position = Vector2.new(pos.X - size/2, pos.Y - size/2); box.Color = color
+                else
+                    box.Visible = false
+                end
+            end
+
+            local pos, onScreen = Camera:WorldToViewportPoint(Root.Position)
+            if onScreen then
+                local distToMouse = (Vector2.new(pos.X, pos.Y) - UserInputService:GetMouseLocation()).Magnitude
+                if distToMouse < ShortestUI then
+                    ShortestUI = distToMouse
+                    ClosestForUI = Player
+                end
+            end
+        end
+    end
+
+    if Controls.TargetInfo_Enabled and ClosestForUI then
+        local TChar = ClosestForUI.Character
+        local TRoot = TChar and TChar:FindFirstChild("HumanoidRootPart")
+        local THum = TChar and TChar:FindFirstChild("Humanoid")
+        if TRoot and THum then
+            local pos, onScreen = Camera:WorldToViewportPoint(TRoot.Position)
+            if onScreen then
+                InfoWindow.Visible = true
+                InfoWindow.Position = UDim2.new(0, pos.X + 20, 0, pos.Y - 20)
+                nameVal.Text = ClosestForUI.Name
+                distVal.Text = string.format("%.1f m", (Camera.CFrame.Position - TRoot.Position).Magnitude / 3.57)
+                speedVal.Text = math.floor(TRoot.Velocity.Magnitude * 3.6) .. " km/h"
+                hpVal.Text = math.floor(THum.Health) .. " HP"
+                HPBar.Size = UDim2.new(math.clamp(THum.Health / THum.MaxHealth, 0, 1), 0, 1, 0)
+            else InfoWindow.Visible = false end
+        else InfoWindow.Visible = false end
+    else InfoWindow.Visible = false end
+end)
+
+Players.PlayerRemoving:Connect(function(P)
+    if Chams_Cache[P] then Chams_Cache[P]:Destroy() end
+    if Box_Cache[P] then Box_Cache[P]:Remove() end
+end)
