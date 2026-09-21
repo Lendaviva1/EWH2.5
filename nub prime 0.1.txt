@@ -1,116 +1,158 @@
-local _0x5a21 = game:GetService("Players")
-local _0x1b92 = game:GetService("RunService")
-local _0x7d4e = game:GetService("TeleportService")
-local _0x3c1f = game:GetService("UserInputService")
-local _0x8e2a = _0x5a21.LocalPlayer
-local _0x4f9d = workspace.CurrentCamera
+local _0x1_V = game:GetService("Players")
+local _0x2_V = game:GetService("RunService")
+local _0x3_V = game:GetService("TeleportService")
+local _0x4_V = game:GetService("UserInputService")
+local _0x5_V = _0x1_V.LocalPlayer
+local _0x6_V = workspace.CurrentCamera
 
-local _0x11a2 = {
-    ESP_Enabled = true,
-    TargetInfo_Enabled = true,
-    TeamCheck = true,
-    Aimbot_Enabled = true,
-    ShowFOV = true,
+local _0x7_C = {
+    ["ESP_E"] = true,
+    ["TInfo_E"] = true,
+    ["TeamC"] = true,
+    ["Aim_E"] = true,
+    ["ShowF"] = true,
 }
 
-local _0x99b1 = {
-    HybridDistance = 400,
-    VisibleColor = Color3.fromRGB(150, 0, 255),
-    HiddenColor = Color3.fromRGB(255, 0, 0),
-    AccentColor = Color3.fromRGB(150, 0, 255),
-    BgColor = Color3.fromRGB(15, 15, 15),
-    AimbotFOV = 100,         
-    AimbotSmoothness = 1,    
-    FOV_Empty = Color3.fromRGB(255, 255, 255),
-    FOV_Target = Color3.fromRGB(255, 0, 0),
-    FOV_Locked = Color3.fromRGB(150, 0, 255),
+local _0x8_S = {
+    ["HD"] = 400,
+    ["VC"] = Color3.fromRGB(150, 0, 255), 
+    ["HC"] = Color3.fromRGB(255, 0, 0),    
+    ["AC"] = Color3.fromRGB(150, 0, 255), 
+    ["BG"] = Color3.fromRGB(10, 10, 15),
+    ["AF"] = 100,         
+    ["AS"] = 1,    
+    ["FE"] = Color3.fromRGB(255, 255, 255), 
+    ["FT"] = Color3.fromRGB(255, 0, 0),    
+    ["FL"] = Color3.fromRGB(150, 0, 255), 
+    ["BA"] = 0.0012, 
 }
 
-local _0xcc21 = {}
-local _0xdd32 = {}
-local _0xee43 = nil 
-local _0xff54 = 0
+local _0x9_C = {}
+local _0x10_C = {}
+local _0x11_L = nil 
+local _0x12_P = 0
 
-local _0x0a1b = Drawing.new("Circle")
-_0x0a1b.Visible = false
-_0x0a1b.Thickness = 1
-_0x0a1b.NumSides = 64 
-_0x0a1b.Radius = _0x99b1.AimbotFOV
-_0x0a1b.Filled = false
-_0x0a1b.Transparency = 0.6
+local _0x13_L = Drawing.new("Line")
+_0x13_L.Visible = false
+_0x13_L.Color = _0x8_S.AC
+_0x13_L.Thickness = 1.5
+_0x13_L.Transparency = 0.7
 
-local _0x1b2c = Instance.new("ScreenGui")
-local _0x2c3d, _0x3d4e = pcall(function() _0x1b2c.Parent = game:GetService("CoreGui") end)
-if not _0x2c3d then _0x1b2c.Parent = _0x8e2a:WaitForChild("PlayerGui") end
-_0x1b2c.Name = "Nub01_Ultimate"
-_0x1b2c.ResetOnSpawn = false
+local _0x14_C = Drawing.new("Circle")
+_0x14_C.Visible = false
+_0x14_C.Thickness = 1
+_0x14_C.NumSides = 64 
+_0x14_C.Radius = _0x8_S.AF
+_0x14_C.Filled = false
+_0x14_C.Transparency = 0.6
 
-local _0x4e5f = Instance.new("Frame")
-_0x4e5f.Parent = _0x1b2c
-_0x4e5f.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-_0x4e5f.BorderSizePixel = 0
-_0x4e5f.Position = UDim2.new(0.05, 0, 0.3, 0)
-_0x4e5f.Size = UDim2.new(0, 160, 0, 250)
-_0x4e5f.Active = true
-_0x4e5f.Draggable = true 
+local _0x15_G = Instance.new("ScreenGui")
+local _0x16_S, _0x17_E = pcall(function() _0x15_G.Parent = game:GetService("CoreGui") end)
+if not _0x16_S then _0x15_G.Parent = _0x5_V:WaitForChild("PlayerGui") end
+_0x15_G.Name = "Nub02_Ult"
+_0x15_G.ResetOnSpawn = false
 
-local _0x5f6a = Instance.new("TextLabel")
-_0x5f6a.Parent = _0x4e5f
-_0x5f6a.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-_0x5f6a.Size = UDim2.new(1, 0, 0, 30)
-_0x5f6a.Font = Enum.Font.SourceSansBold
-_0x5f6a.Text = "Nub 0.1"
-_0x5f6a.TextColor3 = Color3.fromRGB(255, 255, 255)
-_0x5f6a.TextSize = 18
+local _0x18_F = Instance.new("Frame")
+_0x18_F.Parent = _0x15_G
+_0x18_F.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+_0x18_F.BorderSizePixel = 0
+_0x18_F.Position = UDim2.new(0.05, 0, 0.3, 0)
+_0x18_F.Size = UDim2.new(0, 180, 0, 280)
+_0x18_F.Active = true
+_0x18_F.Draggable = true 
 
-local function _0x6a7b(n, t, p, v)
+Instance.new("UICorner", _0x18_F).CornerRadius = UDim.new(0, 8)
+local _0x19_S = Instance.new("UIStroke", _0x18_F)
+_0x19_S.Color = _0x8_S.AC
+_0x19_S.Thickness = 2
+_0x19_S.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+local _0x20_T = Instance.new("TextLabel")
+_0x20_T.Parent = _0x18_F
+_0x20_T.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+_0x20_T.Size = UDim2.new(1, 0, 0, 35)
+_0x20_T.Font = Enum.Font.GothamBold
+_0x20_T.Text = "NUB 0.2"
+_0x20_T.TextColor3 = _0x8_S.AC
+_0x20_T.TextSize = 20
+Instance.new("UICorner", _0x20_T).CornerRadius = UDim.new(0, 8)
+
+local function _0x21_B(n, t, p, v)
     local b = Instance.new("TextButton")
-    b.Parent = _0x4e5f
-    b.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    b.Parent = _0x18_F
+    b.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
     b.Position = p
-    b.Size = UDim2.new(0.8, 0, 0, 30)
-    b.Font = Enum.Font.SourceSans
-    b.Text = t .. ": " .. (_0x11a2[v] and "ON" or "OFF")
-    b.TextColor3 = _0x11a2[v] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
-    b.TextSize = 16
+    b.Size = UDim2.new(0.85, 0, 0, 35)
+    b.Font = Enum.Font.GothamSemibold
+    b.Text = t .. ": " .. (_0x7_C[v] and "ON" or "OFF")
+    b.TextColor3 = _0x7_C[v] and _0x8_S.AC or Color3.fromRGB(150, 150, 150)
+    b.TextSize = 14
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    local s = Instance.new("UIStroke", b)
+    s.Color = Color3.fromRGB(40, 40, 50)
+    s.Thickness = 1
     b.MouseButton1Click:Connect(function()
-        _0x11a2[v] = not _0x11a2[v]
-        b.Text = t .. ": " .. (_0x11a2[v] and "ON" or "OFF")
-        b.TextColor3 = _0x11a2[v] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        _0x7_C[v] = not _0x7_C[v]
+        b.Text = t .. ": " .. (_0x7_C[v] and "ON" or "OFF")
+        b.TextColor3 = _0x7_C[v] and _0x8_S.AC or Color3.fromRGB(150, 150, 150)
+        s.Color = _0x7_C[v] and _0x8_S.AC or Color3.fromRGB(40, 40, 50)
     end)
     return b
 end
 
-_0x6a7b("T1", "ESP Hybrid", UDim2.new(0.1, 0, 0.25, 0), "ESP_Enabled")
-_0x6a7b("T2", "Target Info", UDim2.new(0.1, 0, 0.40, 0), "TargetInfo_Enabled")
-_0x6a7b("T3", "Team Check", UDim2.new(0.1, 0, 0.55, 0), "TeamCheck")
-_0x6a7b("T4", "Aimbot Wall", UDim2.new(0.1, 0, 0.70, 0), "Aimbot_Enabled")
-_0x6a7b("T5", "Show FOV", UDim2.new(0.1, 0, 0.83, 0), "ShowFOV")
+_0x21_B("T1", "ESP", UDim2.new(0.075, 0, 0.2, 0), "ESP_E")
+_0x21_B("T2", "Target Info", UDim2.new(0.075, 0, 0.33, 0), "TInfo_E")
+_0x21_B("T3", "Team Check", UDim2.new(0.075, 0, 0.46, 0), "TeamC")
+_0x21_B("T4", "Aimbot", UDim2.new(0.075, 0, 0.59, 0), "Aim_E")
+_0x21_B("T5", "Show FOV", UDim2.new(0.075, 0, 0.72, 0), "ShowF")
 
-local _0x7b8c = Instance.new("TextButton")
-_0x7b8c.Parent = _0x4e5f
-_0x7b8c.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
-_0x7b8c.Position = UDim2.new(0.1, 0, 0.92, 0)
-_0x7b8c.Size = UDim2.new(0.8, 0, 0, 25)
-_0x7b8c.Text = "REJOIN SERVER"
-_0x7b8c.TextColor3 = Color3.fromRGB(255, 255, 255)
-_0x7b8c.Font = Enum.Font.SourceSansBold
-_0x7b8c.MouseButton1Click:Connect(function() _0x7d4e:Teleport(game.PlaceId, _0x8e2a) end)
+local _0x22_R = Instance.new("TextButton")
+_0x22_R.Parent = _0x18_F
+_0x22_R.BackgroundColor3 = Color3.fromRGB(40, 10, 10)
+_0x22_R.Position = UDim2.new(0.075, 0, 0.86, 0)
+_0x22_R.Size = UDim2.new(0.85, 0, 0, 30)
+_0x22_R.Text = "REJOIN SERVER"
+_0x22_R.TextColor3 = Color3.fromRGB(255, 100, 100)
+_0x22_R.Font = Enum.Font.GothamBold
+Instance.new("UICorner", _0x22_R).CornerRadius = UDim.new(0, 6)
+_0x22_R.MouseButton1Click:Connect(function() _0x3_V:Teleport(game.PlaceId, _0x5_V) end)
 
-local _0x8c9d = Instance.new("Frame")
-_0x8c9d.Parent = _0x1b2c
-_0x8c9d.BackgroundColor3 = _0x99b1.BgColor
-_0x8c9d.BackgroundTransparency = 0.4
-_0x8c9d.Size = UDim2.new(0, 200, 0, 130)
-_0x8c9d.Visible = false
-Instance.new("UICorner", _0x8c9d).CornerRadius = UDim.new(0, 10)
-local _0x9d0e = Instance.new("UIStroke", _0x8c9d)
-_0x9d0e.Color = _0x99b1.AccentColor
-_0x9d0e.Thickness = 2
+local _0x23_N = Instance.new("Frame")
+_0x23_N.Parent = _0x15_G
+_0x23_N.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+_0x23_N.BackgroundTransparency = 0.3
+_0x23_N.Position = UDim2.new(0, 20, 1, -60)
+_0x23_N.Size = UDim2.new(0, 220, 0, 40)
+_0x23_N.Visible = false
+Instance.new("UICorner", _0x23_N).CornerRadius = UDim.new(0, 6)
+local _0x24_S = Instance.new("UIStroke", _0x23_N)
+_0x24_S.Color = _0x8_S.AC
+_0x24_S.Thickness = 1.5
 
-local function _0x0e1f(i, l, p)
+local _0x25_T = Instance.new("TextLabel")
+_0x25_T.Parent = _0x23_N
+_0x25_T.BackgroundTransparency = 1
+_0x25_T.Size = UDim2.new(1, 0, 1, 0)
+_0x25_T.Font = Enum.Font.GothamBold
+_0x25_T.Text = "GM94 SMART AIM: ACTIVE"
+_0x25_T.TextColor3 = _0x8_S.AC
+_0x25_T.TextSize = 14
+
+local _0x26_I = Instance.new("Frame")
+_0x26_I.Parent = _0x15_G
+_0x26_I.BackgroundColor3 = _0x8_S.BG
+_0x26_I.BackgroundTransparency = 0.4
+_0x26_I.Size = UDim2.new(0, 200, 0, 130)
+_0x26_I.Position = UDim2.new(0.85, 0, 0.15, 0)
+_0x26_I.Visible = false
+Instance.new("UICorner", _0x26_I).CornerRadius = UDim.new(0, 10)
+local _0x27_S = Instance.new("UIStroke", _0x26_I)
+_0x27_S.Color = _0x8_S.AC
+_0x27_S.Thickness = 2
+
+local function _0x28_R(i, l, p)
     local r = Instance.new("Frame")
-    r.Parent = _0x8c9d
+    r.Parent = _0x26_I
     r.BackgroundTransparency = 1
     r.Size = UDim2.new(1, -20, 0, 25)
     r.Position = p
@@ -126,159 +168,159 @@ local function _0x0e1f(i, l, p)
     return vL, vB
 end
 
-local _0x1f2a = _0x0e1f("👤", "Name:", UDim2.new(0, 10, 0, 10))
-local _0x2a3b, _0x3b4c = _0x0e1f("❤️", "HP:", UDim2.new(0, 10, 0, 40))
-local _0x4c5d = _0x0e1f("📍", "Dist:", UDim2.new(0, 10, 0, 70))
-local _0x5d6e = _0x0e1f("⏲️", "Speed:", UDim2.new(0, 10, 0, 100))
-local _0x6e7f = Instance.new("Frame", _0x3b4c)
-_0x6e7f.BackgroundColor3 = _0x99b1.AccentColor; _0x6e7f.Size = UDim2.new(1, 0, 1, 0); _0x6e7f.ZIndex = 0
-Instance.new("UICorner", _0x6e7f).CornerRadius = UDim.new(0, 5)
-_0x2a3b.ZIndex = 1
+local _0x29_N = _0x28_R("👤", "Name:", UDim2.new(0, 10, 0, 10))
+local _0x30_H, _0x31_HB = _0x28_R("❤️", "HP:", UDim2.new(0, 10, 0, 40))
+local _0x32_D = _0x28_R("📍", "Dist:", UDim2.new(0, 10, 0, 70))
+local _0x33_S = _0x28_R("⏲️", "Speed:", UDim2.new(0, 10, 0, 100))
+local _0x34_B = Instance.new("Frame", _0x31_HB)
+_0x34_B.BackgroundColor3 = _0x8_S.AC; _0x34_B.Size = UDim2.new(1, 0, 1, 0); _0x34_B.ZIndex = 0
+Instance.new("UICorner", _0x34_B).CornerRadius = UDim.new(0, 5)
+_0x30_H.ZIndex = 1
 
-local function _0xab12()
-    local _0xbc34 = nil
-    local _0xcd56 = _0x99b1.AimbotFOV
-    if _0xee43 and _0xee43.Character and _0xee43.Character:FindFirstChild("Head") then
-        local _0xde78 = _0xee43.Character:FindFirstChild("HumanoidRootPart")
-        if _0xde78 then
-            local _0xef90, _0xfa12 = _0x4f9d:WorldToViewportPoint(_0xde78.Position)
-            if _0xfa12 then
-                local _0x0b23 = _0x3c1f:GetMouseLocation()
-                local _0x1c34 = (Vector2.new(_0xef90.X, _0xef90.Y) - _0x0b23).Magnitude
-                if _0x1c34 < _0xcd56 then return _0xee43 end
-            end
-        end
-    end
-    for _, _0x2d45 in pairs(_0x5a21:GetPlayers()) do
-        if _0x2d45 == _0x8e2a then continue end
-        if _0x11a2.TeamCheck and _0x2d45.Team == _0x8e2a.Team then continue end
-        local _0x3e56 = _0x2d45.Character and _0x2d45.Character:FindFirstChild("HumanoidRootPart")
-        local _0x4f67 = _0x2d45.Character and _0x2d45.Character:FindFirstChild("Humanoid")
-        if _0x3e56 and _0x4f67 and _0x4f67.Health > 0 then
-            local _0x5a78, _0x6b89 = _0x4f9d:WorldToViewportPoint(_0x3e56.Position)
-            if _0x6b89 then
-                local _0x7c90 = _0x3c1f:GetMouseLocation()
-                local _0x8d01 = (Vector2.new(_0x5a78.X, _0x5a78.Y) - _0x7c90).Magnitude
-                if _0x8d01 < _0xcd56 then
-                    _0xcd56 = _0x8d01
-                    _0xbc34 = _0x2d45
-                end
-            end
-        end
-    end
-    return _0xbc34
+local function _0x35_A(T)
+    local FP = T.Character.Head.Position
+    local CF = _0x6_V.CFrame
+    local TCF = CFrame.new(CF.Position, FP)
+    _0x6_V.CFrame = CF:Lerp(TCF, _0x8_S.AS)
 end
 
-_0x1b92.RenderStepped:Connect(function()
-    local _0x9e12 = _0xab12()
-    _0x0a1b.Visible = _0x11a2.ShowFOV
-    _0x0a1b.Position = _0x3c1f:GetMouseLocation()
-    if _0x3c1f:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) and _0x11a2.Aimbot_Enabled and _0x9e12 then
-        _0x0a1b.Color = _0x99b1.FOV_Locked
-        _0xff54 = _0xff54 + 0.1
-        _0x0a1b.Radius = _0x99b1.AimbotFOV + math.sin(_0xff54) * 5
-    elseif _0x9e12 then
-        _0x0a1b.Color = _0x99b1.FOV_Target
-        _0x0a1b.Radius = _0x99b1.AimbotFOV
-    else
-        _0x0a1b.Color = _0x99b1.FOV_Empty
-        _0x0a1b.Radius = _0x99b1.AimbotFOV
-    end
+local function _0x36_S(T)
+    local hP = T.Character.Head.Position
+    local mP = _0x6_V.CFrame.Position
+    local dist = (hP - mP).Magnitude
+    local vC = (dist^2) * _0x8_S.BA
+    local fP = hP + Vector3.new(0, vC, 0)
+    local CF = _0x6_V.CFrame
+    local TCF = CFrame.new(CF.Position, fP)
+    _0x6_V.CFrame = CF:Lerp(TCF, _0x8_S.AS)
+end
 
-    if _0x11a2.Aimbot_Enabled and _0x3c1f:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
-        local _0xae34 = _0x9e12
-        if _0xae34 and _0xae34.Character and _0xae34.Character:FindFirstChild("Head") then
-            _0xee43 = _0xae34
-            local _0xbf45 = _0xae34.Character.Head.Position
-            local _0xca56 = _0x4f9d.CFrame
-            local _0xdb67 = CFrame.new(_0xca56.Position, _0xbf45)
-            _0x4f9d.CFrame = _0xca56:Lerp(_0xdb67, _0x99b1.AimbotSmoothness)
-        else
-            _0xee43 = nil
+local function _0x37_G()
+    if _0x11_L and _0x11_L.Character and _0x11_L.Character:FindFirstChild("Head") then
+        return _0x11_L
+    end
+    local Cl = nil
+    local MD = _0x8_S.AF
+    for _, P in pairs(_0x1_V:GetPlayers()) do
+        if P == _0x5_V then continue end
+        if _0x7_C.TeamC and P.Team == _0x5_V.Team then continue end
+        local R = P.Character and P.Character:FindFirstChild("HumanoidRootPart")
+        local H = P.Character and P.Character:FindFirstChild("Humanoid")
+        if R and H and H.Health > 0 then
+            local Pos, OnS = _0x6_V:WorldToViewportPoint(R.Position)
+            if OnS then
+                local MP = _0x4_V:GetMouseLocation()
+                local Dist = (Vector2.new(Pos.X, Pos.Y) - MP).Magnitude
+                if Dist < MD then
+                    MD = Dist
+                    Cl = P
+                end
+            end
         end
-    else
-        _0xee43 = nil
     end
+    return Cl
+end
 
-    local _0xec78 = nil
-    local _0xfd89 = math.huge
-    for _, _0x0e90 in pairs(_0x5a21:GetPlayers()) do
-        if _0x0e90 == _0x8e2a then continue end
-        local _0x1f01 = not (_0x11a2.TeamCheck and _0x0e90.Team == _0x8e2a.Team)
-        if not _0x1f01 then 
-            if _0xcc21[_0x0e90] then _0xcc21[_0x0e90].Parent = nil end
-            if _0xdd32[_0x0e90] then _0xdd32[_0x0e90].Visible = false end
+_0x2_V.RenderStepped:Connect(function()
+    local TInF = _0x37_G()
+    local MP = _0x4_V:GetMouseLocation()
+    _0x14_C.Visible = _0x7_C.ShowF
+    _0x14_C.Position = MP
+    if _0x4_V:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) and _0x7_C.Aim_E and TInF then
+        _0x14_C.Color = _0x8_S.FL
+        _0x12_P = _0x12_P + 0.1
+        _0x14_C.Radius = _0x8_S.AF + math.sin(_0x12_P) * 5
+    elseif TInF then
+        _0x14_C.Color = _0x8_S.FT
+        _0x14_C.Radius = _0x8_S.AF
+    else
+        _0x14_C.Color = _0x8_S.FE
+        _0x14_C.Radius = _0x8_S.AF
+    end
+    local gEq = _0x5_V.Character and _0x5_V.Character:FindFirstChild("GM94")
+    _0x23_N.Visible = gEq ~= nil
+    if _0x7_C.Aim_E and _0x4_V:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+        local T = TInF
+        if T and T.Character and T.Character:FindFirstChild("Head") then
+            _0x11_L = T
+            local sP, oS = _0x6_V:WorldToViewportPoint(T.Character.Head.Position)
+            if oS then
+                local dFC = (Vector2.new(sP.X, sP.Y) - MP).Magnitude
+                if dFC > _0x8_S.AF then
+                    _0x13_L.Visible = true
+                    _0x13_L.From = MP
+                    _0x13_L.To = Vector2.new(sP.X, sP.Y)
+                else _0x13_L.Visible = false end
+            else _0x13_L.Visible = false end
+            if gEq then _0x36_S(T) else _0x35_A(T) end
+        else _0x11_L = nil; _0x13_L.Visible = false end
+    else _0x11_L = nil; _0x13_L.Visible = false end
+    if _0x7_C.TInfo_E and _0x11_L then
+        local TC = _0x11_L.Character
+        local TR = TC and TC:FindFirstChild("HumanoidRootPart")
+        local TH = TC and TC:FindFirstChild("Humanoid")
+        if TR and TH then
+            local p, os = _0x6_V:WorldToViewportPoint(TR.Position)
+            if os then
+                _0x26_I.Visible = true
+                _0x29_N.Text = _0x11_L.Name
+                _0x32_D.Text = math.floor((_0x6_V.CFrame.Position - TR.Position).Magnitude) .. " studs"
+                _0x33_S.Text = math.floor(TR.Velocity.Magnitude) .. " studs/s"
+                _0x30_H.Text = math.floor(TH.Health) .. " HP"
+                _0x34_B.Size = UDim2.new(math.clamp(TH.Health / TH.MaxHealth, 0, 1), 0, 1, 0)
+            else _0x26_I.Visible = false end
+        else _0x26_I.Visible = false end
+    else _0x26_I.Visible = false end
+    for _, P in pairs(_0x1_V:GetPlayers()) do
+        if P == _0x5_V then continue end
+        local isE = not (_0x7_C.TeamC and P.Team == _0x5_V.Team)
+        if not isE then 
+            if _0x9_C[P] then _0x9_C[P].Parent = nil end
+            if _0x10_C[P] then _0x10_C[P].Visible = false end
             continue 
         end
-        local _0x2a12 = _0x0e90.Character
-        local _0x3b23 = _0x2a12 and _0x2a12:FindFirstChild("HumanoidRootPart")
-        local _0x4c34 = _0x2a12 and _0x2a12:FindFirstChild("Humanoid")
-        local _0x5d45 = _0x2a12 and _0x2a12:FindFirstChild("Head")
-        if not _0x3b23 or not _0x4c34 or not _0x5d45 or _0x4c34.Health <= 0 then
-            if _0xcc21[_0x0e90] then _0xcc21[_0x0e90].Parent = nil end
-            if _0xdd32[_0x0e90] then _0xdd32[_0x0e90].Visible = false end
+        local C = P.Character
+        local R = C and C:FindFirstChild("HumanoidRootPart")
+        local H = C and C:FindFirstChild("Humanoid")
+        local Hd = C and C:FindFirstChild("Head")
+        if not R or not H or not Hd or H.Health <= 0 then
+            if _0x9_C[P] then _0x9_C[P].Parent = nil end
+            if _0x10_C[P] then _0x10_C[P].Visible = false end
             continue
         end
-        if _0x11a2.ESP_Enabled then
-            local _0x6e56 = (_0x4f9d.CFrame.Position - _0x3b23.Position).Magnitude
-            local _0x7f67 = (function()
-                local _0x8a78 = RaycastParams.new()
-                _0x8a78.FilterDescendantsInstances = {_0x8e2a.Character, _0x2a12}
-                _0x8a78.FilterType = Enum.RaycastFilterType.Blacklist
-                return workspace:Raycast(_0x4f9d.CFrame.Position, _0x3b23.Position - _0x4f9d.CFrame.Position, _0x8a78) == nil
+        if _0x7_C.ESP_E then
+            local d = (_0x6_V.CFrame.Position - R.Position).Magnitude
+            local vis = (function()
+                local rp = RaycastParams.new()
+                rp.FilterDescendantsInstances = {_0x5_V.Character, C}
+                rp.FilterType = Enum.RaycastFilterType.Blacklist
+                return workspace:Raycast(_0x6_V.CFrame.Position, R.Position - _0x6_V.CFrame.Position, rp) == nil
             end)()
-            local _0x9b89 = _0x7f67 and _0x99b1.VisibleColor or _0x99b1.HiddenColor
-            if _0x6e56 < _0x99b1.HybridDistance then
-                if _0xdd32[_0x0e90] then _0xdd32[_0x0e90].Visible = false end
-                local _0x0c90 = _0xcc21[_0x0e90] or Instance.new("Highlight")
-                _0x0c90.FillColor = _0x9b89; _0x0c90.FillTransparency = 0.5; _0x0c90.OutlineColor = Color3.fromRGB(255,255,255); _0x0c90.Adornee = _0x2a12; _0x0c90.Parent = _0x2a12
-                _0xcc21[_0x0e90] = _0x0c90
+            local col = vis and _0x8_S.VC or _0x8_S.HC
+            if d < _0x8_S.HD then
+                if _0x10_C[P] then _0x10_C[P].Visible = false end
+                local hl = _0x9_C[P] or Instance.new("Highlight")
+                hl.FillColor = col; hl.FillTransparency = 0.5; hl.OutlineColor = Color3.fromRGB(255,255,255); hl.Adornee = C; hl.Parent = C
+                _0x9_C[P] = hl
             else
-                if _0xcc21[_0x0e90] then _0xcc21[_0x0e90].Parent = nil end
-                if not _0xdd32[_0x0e90] then 
-                    local _0x1d01 = Drawing.new("Square")
-                    _0x1d01.Visible = false; _0x1d01.Thickness = 1; _0x1d01.Filled = false
-                    _0xdd32[_0x0e90] = _0x1d01
+                if _0x9_C[P] then _0x9_C[P].Parent = nil end
+                if not _0x10_C[P] then 
+                    local b = Drawing.new("Square")
+                    b.Visible = false; b.Thickness = 1; b.Filled = false
+                    _0x10_C[P] = b
                 end
-                local _0x2e12 = _0xdd32[_0x0e90]
-                local _0x3f23, _0x4a34 = _0x4f9d:WorldToViewportPoint(_0x3b23.Position)
-                if _0x4a34 then
-                    local _0x5b45 = (1000 / _0x6e56) * 3
-                    _0x2e12.Visible = true; _0x2e12.Size = Vector2.new(_0x5b45, _0x5b45 * 1.5); _0x2e12.Position = Vector2.new(_0x3f23.X - _0x5b45/2, _0x3f23.Y - _0x5b45/2); _0x2e12.Color = _0x9b89
-                else
-                    _0x2e12.Visible = false
-                end
-            end
-            local _0x6c56, _0x7d67 = _0x4f9d:WorldToViewportPoint(_0x3b23.Position)
-            if _0x7d67 then
-                local _0x8e78 = (Vector2.new(_0x6c56.X, _0x6c56.Y) - _0x3c1f:GetMouseLocation()).Magnitude
-                if _0x8e78 < _0xfd89 then
-                    _0xfd89 = _0x8e78
-                    _0xec78 = _0x0e90
-                end
+                local box = _0x10_C[P]
+                local pos, onS = _0x6_V:WorldToViewportPoint(R.Position)
+                if onS then
+                    local sz = (1000 / d) * 3
+                    box.Visible = true; box.Size = Vector2.new(sz, sz * 1.5); box.Position = Vector2.new(pos.X - sz/2, pos.Y - sz/2); box.Color = col
+                else box.Visible = false end
             end
         end
     end
-    if _0x11a2.TargetInfo_Enabled and _0xec78 then
-        local _0x9f89 = _0xec78.Character
-        local _0x0a90 = _0x9f89 and _0x9f89:FindFirstChild("HumanoidRootPart")
-        local _0x1b01 = _0x9f89 and _0x9f89:FindFirstChild("Humanoid")
-        if _0x0a90 and _0x1b01 then
-            local _0x2c12, _0x3d23 = _0x4f9d:WorldToViewportPoint(_0x0a90.Position)
-            if _0x3d23 then
-                _0x8c9d.Visible = true
-                _0x8c9d.Position = UDim2.new(0, _0x2c12.X + 20, 0, _0x2c12.Y - 20)
-                _0x1f2a.Text = _0xec78.Name
-                _0x4c5d.Text = string.format("%.1f m", (_0x4f9d.CFrame.Position - _0x0a90.Position).Magnitude / 3.57)
-                _0x5d6e.Text = math.floor(_0x0a90.Velocity.Magnitude * 3.6) .. " km/h"
-                _0x2a3b.Text = math.floor(_0x1b01.Health) .. " HP"
-                _0x6e7f.Size = UDim2.new(math.clamp(_0x1b01.Health / _0x1b01.MaxHealth, 0, 1), 0, 1, 0)
-            else _0x8c9d.Visible = false end
-        else _0x8c9d.Visible = false end
-    else _0x8c9d.Visible = false end
 end)
 
-_0x5a21.PlayerRemoving:Connect(function(_0xP)
-    if _0xcc21[_0xP] then _0xcc21[_0xP]:Destroy() end
-    if _0xdd32[_0xP] then _0xdd32[_0xP]:Remove() end
+_0x1_V.PlayerRemoving:Connect(function(P)
+    if _0x9_C[P] then _0x9_C[P]:Destroy() end
+    if _0x10_C[P] then _0x10_C[P]:Remove() end
 end)
